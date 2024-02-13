@@ -43,6 +43,14 @@ jobs:
     - name: Install dependencies
       run: nuget restore $env:Solution_Name
 
+    # how on earth is this so bad??
+    - name: Fix Visual Studio
+      run: |
+        SET current_path="%CD%"
+        CD "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Professional\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild"
+        CALL DisableOutOfProcBuild.exe
+        CD %current_path%
+
     # Create the app installer
     - name: Create the installer package
       run: devenv $env:Solution_Name /build "$env:Configuration" /project "SunSynkTrayInstaller"

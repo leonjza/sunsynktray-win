@@ -48,9 +48,9 @@ namespace SunSynkTray
 
                 return JsonSerializer.Deserialize<UserSettings>(asString);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                MessageBox.Show($"failed to load settings with error: {e}", "Error");
+                // maybe the file does not exist, so just return a new instance
                 return new UserSettings { };
             }
         }

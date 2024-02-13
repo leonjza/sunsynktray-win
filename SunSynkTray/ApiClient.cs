@@ -108,13 +108,13 @@ namespace SunSynkTray
                     UseProxy = true,
                     ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
                 });
-
-                _httpClient.BaseAddress = new Uri(_baseUrl);
             }
             else
             {
                 _httpClient = new HttpClient();
             }
+
+            _httpClient.BaseAddress = new Uri(_baseUrl);
 
             this.settings = settings;
         }

@@ -13,8 +13,8 @@ namespace SunSynkTray
     public partial class MainWindow : Form
     {
 
-        private UserSettings settings;
-        private ApiClient apiClient;
+        private UserSettings _settings;
+        private ApiClient _apiClient;
         private int _timerSeconds = 60;
 
 
@@ -22,24 +22,43 @@ namespace SunSynkTray
         {
             InitializeComponent();
 
-            this.ShowInTaskbar = false;
-            this.WindowState = FormWindowState.Minimized;
+            ShowInTaskbar = false;
+            WindowState = FormWindowState.Minimized;
         }
 
         private async void MainWindow_Load(object sender, EventArgs e)
         {
 
-            settings = SettingsManager.Load();
+            _settings = SettingsManager.Load();
 
-            textBoxUsername.Text = settings.UserName;
-            maskedTextBoxPassword.Text = settings.Password;
+            // potentially the first boot which wont have any settings
+            if (string.IsNullOrWhiteSpace(_settings.UserName))
+            {
+                return;
+            }
+
+            textBoxUsername.Text = _settings.UserName;
+            maskedTextBoxPassword.Text = _settings.Password;
 
             // try and connect to the API using the credentials we have
             labelWebStatus.Text = "Checking credentials...";
             labelWebStatus.Visible = true;
 
-            apiClient = new ApiClient(settings);
-            var (success, message) = await apiClient.Login();
+            bool success;
+            string message;
+
+            try
+            {
+                _apiClient = new ApiClient(_settings);
+                (success, message) = await _apiClient.Login();
+            }
+            catch (Exception)
+            {
+                labelWebStatus.Text = "Failed to connect to SunSynk API";
+                labelWebStatus.Visible = true;
+
+                return;
+            }
 
             if (!success)
             {
@@ -47,13 +66,13 @@ namespace SunSynkTray
                 return;
             }
 
-            if (settings.PlantId == null)
+            if (_settings.PlantId == null)
             {
                 labelWebStatus.Text = $"Authenticated but no plant selected";
                 return;
             }
 
-            labelWebStatus.Text = $"Using plant ID {settings.PlantId} ({settings.PlantName}) for user {settings.UserName}";
+            labelWebStatus.Text = $"Using plant ID {_settings.PlantId} ({_settings.PlantName}) for user {_settings.UserName}";
             labelWebStatus.Visible = true;
 
             timerCallApi.Start();
@@ -61,9 +80,9 @@ namespace SunSynkTray
 
         private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-            this.Activate();
+            Show();
+            WindowState = FormWindowState.Normal;
+            Activate();
         }
 
         private void toolStripMenuExit_Click(object sender, EventArgs e)
@@ -74,9 +93,9 @@ namespace SunSynkTray
 
         private void toolStripMenuIOpen_Click(object sender, EventArgs e)
         {
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-            this.Activate();
+            Show();
+            WindowState = FormWindowState.Normal;
+            Activate();
         }
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
@@ -84,7 +103,7 @@ namespace SunSynkTray
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.Hide(); // just hide the window
+                Hide(); // just hide the window
             }
         }
 
@@ -94,7 +113,7 @@ namespace SunSynkTray
             listBoxPlants.Items.Clear();
             listBoxPlants.Visible = false;
 
-            settings = new UserSettings
+            _settings = new UserSettings
             {
                 UserName = textBoxUsername.Text.Trim(),
                 Password = maskedTextBoxPassword.Text,
@@ -103,8 +122,8 @@ namespace SunSynkTray
             labelWebStatus.Text = "Checking credentials...";
             labelWebStatus.Visible = true;
 
-            apiClient = new ApiClient(settings);
-            var (success, message) = await apiClient.Login();
+            _apiClient = new ApiClient(_settings);
+            var (success, message) = await _apiClient.Login();
 
             if (!success)
             {
@@ -112,10 +131,10 @@ namespace SunSynkTray
                 return;
             }
 
-            SettingsManager.Save(settings); // store the credentials, they obviously work!
+            SettingsManager.Save(_settings); // store the credentials, they obviously work!
 
             labelWebStatus.Text = "Login successful! Loading plants...";
-            ApiClient.PlantsResponse plants = await apiClient.Get<ApiClient.PlantsResponse>("/api/v1/plants?page=1&limit=10&name=&status=");
+            ApiClient.PlantsResponse plants = await _apiClient.Get<ApiClient.PlantsResponse>("/api/v1/plants?page=1&limit=10&name=&status=");
             
             // populate the plants list
             foreach (var plant in plants.data.infos)
@@ -132,13 +151,13 @@ namespace SunSynkTray
 
             if (listBoxPlants.SelectedItem is ApiClient.PlantsReponseDataInfos info)
             {
-                labelWebStatus.Text = $"Using plant ID {info.id} ({info.name}) for user {settings.UserName}";
+                labelWebStatus.Text = $"Using plant ID {info.id} ({info.name}) for user {_settings.UserName}";
                 
-                settings.PlantId = info.id;
-                settings.PlantName = info.name;
-                SettingsManager.Save(settings);
+                _settings.PlantId = info.id;
+                _settings.PlantName = info.name;
+                SettingsManager.Save(_settings);
 
-                ApiClient.EnergyFlowResponse energy = await apiClient.Get<ApiClient.EnergyFlowResponse>($"/api/v1/plant/energy/{settings.PlantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
+                ApiClient.EnergyFlowResponse energy = await _apiClient.Get<ApiClient.EnergyFlowResponse>($"/api/v1/plant/energy/{_settings.PlantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
 
                 string statusText = $"PV = {energy.data.pvPower}W, Batt = {energy.data.battPower}W, Grid = {energy.data.gridOrMeterPower}, Load = {energy.data.loadOrEpsPower}, SOC = {energy.data.soc}";
 
@@ -154,7 +173,7 @@ namespace SunSynkTray
 
         private async void timerCallApi_Tick(object sender, EventArgs e)
         {
-            if (apiClient == null || settings.PlantId == null || !apiClient.IsAuthenticated()) return;
+            if (_apiClient == null || _settings.PlantId == null || !_apiClient.IsAuthenticated()) return;
 
             if (_timerSeconds > 0)
             {
@@ -169,7 +188,7 @@ namespace SunSynkTray
 
             try
             {
-                ApiClient.EnergyFlowResponse energy = await apiClient.Get<ApiClient.EnergyFlowResponse>($"/api/v1/plant/energy/{settings.PlantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
+                ApiClient.EnergyFlowResponse energy = await _apiClient.Get<ApiClient.EnergyFlowResponse>($"/api/v1/plant/energy/{_settings.PlantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
                 string statusText = $"PV = {energy.data.pvPower}W, Batt = {energy.data.battPower}W, Grid = {energy.data.gridOrMeterPower}, Load = {energy.data.loadOrEpsPower}, SOC = {energy.data.soc}";
 
                 labelPlantStatus.Text = $"Status: {statusText}";

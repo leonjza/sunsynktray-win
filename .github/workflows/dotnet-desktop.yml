@@ -40,6 +40,9 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Install dependencies
+      run: nuget restore $env:Solution_Name
+
     # Create the app installer
     - name: Create the installer package
       run: devenv $env:Solution_Name /build "$env:Configuration" /project "SunSynkTrayInstaller"

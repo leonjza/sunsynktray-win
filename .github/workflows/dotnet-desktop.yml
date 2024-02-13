@@ -48,7 +48,7 @@ jobs:
       run: |
         SET current_path="%CD%"
         CD "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild"
-        CALL DisableOutOfProcBuild.exe
+        DisableOutOfProcBuild.exe
         CD %current_path%
 
     # Create the app installer

@@ -1,0 +1,51 @@
+name: .NET Desktop
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release]
+
+    runs-on: windows-latest
+    
+    env:
+      Solution_Name: SunSynkTray.sln
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 4.8.x
+    - name: Setup NuGet.exe for use with actions
+      # You may pin to the exact commit or the version.
+      # uses: NuGet/setup-nuget@a21f25cd3998bf370fde17e3f1b4c12c175172f9
+      uses: NuGet/setup-nuget@v2.0.0
+
+    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    # Create the app installer
+    - name: Create the installer package
+      run: devenv $env:Solution_Name /build "$env:Configuration" /project "SunSynkTrayInstaller"
+      env:
+        Configuration: ${{ matrix.configuration }}
+
+    # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: SunSynkTrayInstaller
+        path: SunSynkTrayInstaller\Release\SunSynkTrayInstaller.msi

@@ -46,10 +46,10 @@ jobs:
     # how on earth is this so bad??
     - name: Fix Visual Studio
       run: |
-        SET current_path="%CD%"
-        CD "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild"
+        $current_path=pwd
+        cd "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild"
         .\DisableOutOfProcBuild.exe
-        CD %current_path%
+        cd $current_path
 
     # Create the app installer
     - name: Create the installer package

@@ -2,7 +2,7 @@
 
 ![demo](images/demo.png)
 
-A SunSynk Tray Icon Application to Monitor Plants SOC, for Windows.
+A small, .NET Framework 4.8 SunSynk tray icon application to monitor plants' state of charge, for Windows.
 
 ## installation
 

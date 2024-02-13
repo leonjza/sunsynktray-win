@@ -1,0 +1,58 @@
+﻿using System;
+using System.Security.Cryptography;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.Json;
+using System.IO;
+using System.Windows.Forms;
+
+
+namespace SunSynkTray
+{
+    [Serializable]
+    internal class UserSettings
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public string AuthToken { get; set; }
+        public DateTime TokenExpiresAt { get; set; }
+        public int? PlantId { get; set; }
+        public string PlantName { get; set; }
+    }
+
+    internal static class SettingsManager
+    {
+        private static string settingsPath =  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SunSynkTray");
+        private static string settingsLocation = Path.Combine(settingsPath, "settings.dat");
+
+        public static void Save(UserSettings settings)
+        {
+            if (!Directory.Exists(settingsPath)) Directory.CreateDirectory(settingsPath);
+
+            string asJson = JsonSerializer.Serialize(settings);
+            byte[] asBytes = Encoding.UTF8.GetBytes(asJson);
+            byte[] asEncryptedBytes = ProtectedData.Protect(asBytes, null, DataProtectionScope.CurrentUser);
+
+            File.WriteAllBytes(settingsLocation, asEncryptedBytes);
+        }
+
+        public static UserSettings Load()
+        {
+            try
+            {
+                byte[] asEncryptedBytes = File.ReadAllBytes(settingsLocation);
+                byte[] asBytes = ProtectedData.Unprotect(asEncryptedBytes, null, DataProtectionScope.CurrentUser);
+                string asString = Encoding.UTF8.GetString(asBytes);
+
+                return JsonSerializer.Deserialize<UserSettings>(asString);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"failed to load settings with error: {e}", "Error");
+                return new UserSettings { };
+            }
+        }
+    }
+}

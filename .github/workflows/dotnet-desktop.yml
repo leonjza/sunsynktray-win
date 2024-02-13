@@ -47,7 +47,7 @@ jobs:
     - name: Fix Visual Studio
       run: |
         SET current_path="%CD%"
-        CD %ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild
+        CD ${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild
         CALL DisableOutOfProcBuild.exe
         CD %current_path%
 

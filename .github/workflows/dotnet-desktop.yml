@@ -12,7 +12,7 @@ jobs:
       matrix:
         configuration: [Release]
 
-    runs-on: windows-latest
+    runs-on: windows-2019
     
     env:
       Solution_Name: SunSynkTray.sln
@@ -23,11 +23,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Install the .NET Core workload
-    - name: Install .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 4.8.x
+    # # Install the .NET Core workload
+    # - name: Install .NET
+    #   uses: actions/setup-dotnet@v3
+    #   with:
+    #     dotnet-version: 4.8.x
     - name: Setup NuGet.exe for use with actions
       # You may pin to the exact commit or the version.
       # uses: NuGet/setup-nuget@a21f25cd3998bf370fde17e3f1b4c12c175172f9

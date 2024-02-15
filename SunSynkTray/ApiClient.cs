@@ -2,7 +2,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace SunSynkTray
 {
@@ -40,6 +42,24 @@ namespace SunSynkTray
             public string refresh_token { get; set; }
             public int expires_in { get; set; }
             public string scope { get; set; }
+        }
+
+        internal class RefreshAuthRequest
+        {
+            public string grant_type { get; set; } = "refresh_token";
+            public string refresh_token { get; set; }
+        }
+
+        internal class RefreshAuthResponse : ApiResponse
+        {
+            public RefreshAuthResponseData data { get; set; }
+        }
+
+        internal class RefreshAuthResponseData
+        {
+            public string access_token { get; set; }
+            public string refresh_token { get; set; }
+            public int expires_in { get; set; }
         }
 
         internal class PlantsResponse : ApiResponse
@@ -88,6 +108,7 @@ namespace SunSynkTray
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl = $"https://api.sunsynk.net";
         private string _lastError;
+        private string _refreshToken;
         private DateTime _expiresIn;
         private UserSettings settings;
 
@@ -139,8 +160,9 @@ namespace SunSynkTray
                 return false;
             }
 
-            // set the expires_in time
-            _expiresIn = DateTime.Now.AddSeconds(auth.data.expires_in);
+            // set the expires_in time and save the fresh_token
+            _expiresIn = DateTime.Now.AddSeconds(auth.data.expires_in - 5);
+            _refreshToken = auth.data.refresh_token;
 
             // set the auth header
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth.data.access_token);
@@ -153,18 +175,40 @@ namespace SunSynkTray
             return _expiresIn == null ? false : DateTime.Now < _expiresIn;
         }
 
-        public void RefreshAuthToken()
+        public async Task RefreshAuthToken()
         {
-            if (!IsAuthenticated())
+            if (IsAuthenticated())
             {
-                // implement token refreshing
+                return;
             }
+
+            MessageBox.Show("going to refresh our token");
+
+            RefreshAuthRequest req = new RefreshAuthRequest
+            {
+                refresh_token = _refreshToken,
+            };
+
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("/oauth/token", req);
+            response.EnsureSuccessStatusCode();
+
+            RefreshAuthResponse auth = await response.Content.ReadFromJsonAsync<RefreshAuthResponse>();
+
+            // update expires in and new refresh_token
+            _expiresIn = DateTime.Now.AddSeconds(auth.data.expires_in - 5);
+            _refreshToken = auth.data.refresh_token;
+
+            MessageBox.Show($"refresh token is now: {_refreshToken}");
+
+            // set the auth header
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth.data.access_token);
+
 
         }
 
         public async Task<T> Get<T>(string endpoint)
         {
-            RefreshAuthToken();
+            await RefreshAuthToken();
 
             return await _httpClient.GetFromJsonAsync<T>(endpoint);
         }

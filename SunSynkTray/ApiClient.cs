@@ -115,11 +115,6 @@ namespace SunSynkTray
             this.settings = settings;
         }
 
-        public bool IsAuthenticated()
-        {
-            return _expiresIn == null ? false : DateTime.Now < _expiresIn;
-        }
-
         public string LastError()
         {
             return _lastError;
@@ -153,8 +148,24 @@ namespace SunSynkTray
             return true;
         }
 
+        public bool IsAuthenticated()
+        {
+            return _expiresIn == null ? false : DateTime.Now < _expiresIn;
+        }
+
+        public void RefreshAuthToken()
+        {
+            if (!IsAuthenticated())
+            {
+                // implement token refreshing
+            }
+
+        }
+
         public async Task<T> Get<T>(string endpoint)
         {
+            RefreshAuthToken();
+
             return await _httpClient.GetFromJsonAsync<T>(endpoint);
         }
 

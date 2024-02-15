@@ -156,7 +156,7 @@ namespace SunSynkTray
                 labelPlantStatus.Visible = true;
 
                 trayIcon.Text = statusText;
-                trayIcon.Icon = Tools.CreateIcon(energy.data.soc, energy.data.loadOrEpsPower);
+                trayIcon.Icon = Tools.TextIcon(energy.data.soc, Tools.PercentAsColor(energy.data.soc));
 
                 if (!timerCallApi.Enabled) timerCallApi.Start();
             }
@@ -186,7 +186,7 @@ namespace SunSynkTray
                 labelPlantStatus.Visible = true;
 
                 trayIcon.Text = statusText;
-                trayIcon.Icon = Tools.CreateIcon(energy.data.soc, energy.data.loadOrEpsPower);
+                trayIcon.Icon = Tools.TextIcon(energy.data.soc, Tools.PercentAsColor(energy.data.soc));
 
             }
             catch (Exception ex)
@@ -196,7 +196,8 @@ namespace SunSynkTray
                 labelPlantStatus.Visible = true;
 
                 trayIcon.Text = statusText;
-                trayIcon.Icon = Tools.CreateIcon(0.0f, 0);
+                //trayIcon.Icon = Tools.CreateIcon(0.0f, 0);
+                trayIcon.Icon = Tools.TextIcon(0.0f, Tools.PercentAsColor(0.0f));
             }
         }
     }

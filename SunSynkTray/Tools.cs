@@ -5,44 +5,53 @@ namespace SunSynkTray
 {
     internal static class Tools
     {
-        public static Icon CreateIcon(float n1, int n2)
+        public static Icon TextIcon(float num, Color color)
         {
-
-            int iconSize = 32;
+            int iconSize = 16;
 
             using (Bitmap bitmap = new Bitmap(iconSize, iconSize))
             {
                 using (Graphics graphics = Graphics.FromImage(bitmap))
                 {
-                    // Enable smoothing of the edge of the circle and the text
-                    graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                    graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-
                     graphics.Clear(Color.Transparent);
+                    graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
 
                     // Set up the font and brush for drawing
                     // Adjust the font size as needed to make the number as large as possible while fitting in the icon
-                    using (Font font = new Font("Arial", 20, FontStyle.Bold, GraphicsUnit.Pixel))
-                    using (Brush brush = new SolidBrush(Color.Yellow))
+                    using (Font font = new Font("Tahoma", 10, FontStyle.Regular, GraphicsUnit.Pixel))
+                    using (Brush brush = new SolidBrush(color))
                     {
-                        StringFormat stringFormat = new StringFormat
-                        {
-                            Alignment = StringAlignment.Center, // Center text horizontally
-                            LineAlignment = StringAlignment.Center, // Center text vertically
-                        };
-
                         // Draw the number in the center of the bitmap
-                        graphics.DrawString(n1.ToString(), font, brush, new RectangleF(0, 0, iconSize, iconSize), stringFormat);
+                        graphics.DrawString(num.ToString(), font, brush, -2, 0);
                     }
                 }
 
-                // Convert the bitmap to an icon and return
+
                 using (Icon icon = Icon.FromHandle(bitmap.GetHicon()))
                 {
                     return (Icon)icon.Clone();
                 }
             }
+        }
 
+        public static Color PercentAsColor(float p)
+        {
+            if (p >= 80)
+            {
+                return Color.Green;
+            }
+            else if ((p < 80) && (p >= 60))
+            {
+                return Color.Yellow;
+            }
+            else if ((p < 60) && (p >= 40))
+            {
+                return Color.Purple;
+            }
+            else 
+            {
+                return Color.Red; 
+            }
         }
 
         public static string TimeAgoFormat(DateTime time)

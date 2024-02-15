@@ -195,8 +195,6 @@ namespace SunSynkTray
 
             // set the auth header
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth.data.access_token);
-
-
         }
 
         public async Task<T> Get<T>(string endpoint)

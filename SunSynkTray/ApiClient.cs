@@ -177,12 +177,7 @@ namespace SunSynkTray
 
         public async Task RefreshAuthToken()
         {
-            if (IsAuthenticated())
-            {
-                return;
-            }
-
-            MessageBox.Show("going to refresh our token");
+            if (IsAuthenticated()) return;
 
             RefreshAuthRequest req = new RefreshAuthRequest
             {
@@ -197,8 +192,6 @@ namespace SunSynkTray
             // update expires in and new refresh_token
             _expiresIn = DateTime.Now.AddSeconds(auth.data.expires_in - 5);
             _refreshToken = auth.data.refresh_token;
-
-            MessageBox.Show($"refresh token is now: {_refreshToken}");
 
             // set the auth header
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth.data.access_token);

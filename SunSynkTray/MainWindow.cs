@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SunSynkTray
@@ -31,7 +24,7 @@ namespace SunSynkTray
 
             _settings = SettingsManager.Load();
 
-            // potentially the first boot which wont have any settings
+            // the first boot which wont have any settings
             if (string.IsNullOrWhiteSpace(_settings.UserName))
             {
                 return;
@@ -45,16 +38,15 @@ namespace SunSynkTray
             labelWebStatus.Visible = true;
 
             bool success;
-            string message;
 
             try
             {
                 _apiClient = new ApiClient(_settings);
-                (success, message) = await _apiClient.Login();
+                success = await _apiClient.Login();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                labelWebStatus.Text = "Failed to connect to SunSynk API";
+                labelWebStatus.Text = $"Failed to connect to SunSynk API with error: {ex}";
                 labelWebStatus.Visible = true;
 
                 return;
@@ -62,7 +54,7 @@ namespace SunSynkTray
 
             if (!success)
             {
-                labelWebStatus.Text = $"Failed to authenticate: {message}";
+                labelWebStatus.Text = $"Failed to authenticate: {_apiClient.LastError()}";
                 return;
             }
 
@@ -123,25 +115,24 @@ namespace SunSynkTray
             labelWebStatus.Visible = true;
 
             _apiClient = new ApiClient(_settings);
-            var (success, message) = await _apiClient.Login();
 
-            if (!success)
+            if (!await _apiClient.Login())
             {
-                labelWebStatus.Text = $"Failed to authenticate: {message}";
+                labelWebStatus.Text = $"Failed to authenticate: {_apiClient.LastError()}";
                 return;
             }
 
             SettingsManager.Save(_settings); // store the credentials, they obviously work!
 
             labelWebStatus.Text = "Login successful! Loading plants...";
-            ApiClient.PlantsResponse plants = await _apiClient.Get<ApiClient.PlantsResponse>("/api/v1/plants?page=1&limit=10&name=&status=");
-            
+            ApiClient.PlantsResponse plants = await _apiClient.Plants();
+
             // populate the plants list
             foreach (var plant in plants.data.infos)
             {
                 listBoxPlants.Items.Add(plant); // will use the overridden ToString() to format
             }
-            labelWebStatus.Text = "Choose a plant to poll";
+            labelWebStatus.Text = "Choose a plant to monitor";
             listBoxPlants.Visible = true;
         }
 
@@ -152,12 +143,12 @@ namespace SunSynkTray
             if (listBoxPlants.SelectedItem is ApiClient.PlantsReponseDataInfos info)
             {
                 labelWebStatus.Text = $"Using plant ID {info.id} ({info.name}) for user {_settings.UserName}";
-                
+
                 _settings.PlantId = info.id;
                 _settings.PlantName = info.name;
                 SettingsManager.Save(_settings);
 
-                ApiClient.EnergyFlowResponse energy = await _apiClient.Get<ApiClient.EnergyFlowResponse>($"/api/v1/plant/energy/{_settings.PlantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
+                ApiClient.EnergyFlowResponse energy = await _apiClient.EnergyFlow(info.id);
 
                 string statusText = $"PV = {energy.data.pvPower}W, Batt = {energy.data.battPower}W, Grid = {energy.data.gridOrMeterPower}, Load = {energy.data.loadOrEpsPower}, SOC = {energy.data.soc}";
 
@@ -188,8 +179,8 @@ namespace SunSynkTray
 
             try
             {
-                ApiClient.EnergyFlowResponse energy = await _apiClient.Get<ApiClient.EnergyFlowResponse>($"/api/v1/plant/energy/{_settings.PlantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
-                string statusText = $"PV = {energy.data.pvPower}W, Batt = {energy.data.battPower}W, Grid = {energy.data.gridOrMeterPower}, Load = {energy.data.loadOrEpsPower}, SOC = {energy.data.soc}";
+                ApiClient.EnergyFlowResponse energy = await _apiClient.EnergyFlow((int)_settings.PlantId);
+                string statusText = $"PV = {energy.data.pvPower}W, Batt = {energy.data.battPower}W, Grid = {energy.data.gridOrMeterPower}W, Load = {energy.data.loadOrEpsPower}W, SOC = {energy.data.soc}";
 
                 labelPlantStatus.Text = $"Status: {statusText}";
                 labelPlantStatus.Visible = true;
@@ -197,7 +188,8 @@ namespace SunSynkTray
                 trayIcon.Text = statusText;
                 trayIcon.Icon = Tools.CreateIcon(energy.data.soc, energy.data.loadOrEpsPower);
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 string statusText = $"Failed to make API call: {ex}";
                 labelPlantStatus.Text = statusText;

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Security.Cryptography;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
 using System.IO;
-using System.Windows.Forms;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 
 namespace SunSynkTray
@@ -24,7 +20,7 @@ namespace SunSynkTray
 
     internal static class SettingsManager
     {
-        private static string settingsPath =  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SunSynkTray");
+        private static string settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SunSynkTray");
         private static string settingsLocation = Path.Combine(settingsPath, "settings.dat");
 
         public static void Save(UserSettings settings)

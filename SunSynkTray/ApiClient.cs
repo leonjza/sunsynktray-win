@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SunSynkTray
@@ -35,7 +30,7 @@ namespace SunSynkTray
 
         internal class AuthResponse : ApiResponse
         {
-            public AuthResponseData data {  get; set; }
+            public AuthResponseData data { get; set; }
         }
 
         internal class AuthResponseData
@@ -44,7 +39,7 @@ namespace SunSynkTray
             public string token_type { get; set; }
             public string refresh_token { get; set; }
             public int expires_in { get; set; }
-            public string scope {  get; set; }
+            public string scope { get; set; }
         }
 
         internal class PlantsResponse : ApiResponse
@@ -92,6 +87,7 @@ namespace SunSynkTray
 
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl = $"https://api.sunsynk.net";
+        private string _lastError;
         private DateTime _expiresIn;
         private UserSettings settings;
 
@@ -124,7 +120,12 @@ namespace SunSynkTray
             return _expiresIn == null ? false : DateTime.Now < _expiresIn;
         }
 
-        public async Task<(bool, string)> Login()
+        public string LastError()
+        {
+            return _lastError;
+        }
+
+        public async Task<bool> Login()
         {
             AuthRequest req = new AuthRequest
             {
@@ -139,7 +140,8 @@ namespace SunSynkTray
 
             if (!auth.success)
             {
-                return (false, auth.msg);
+                _lastError = auth.msg;
+                return false;
             }
 
             // set the expires_in time
@@ -148,12 +150,26 @@ namespace SunSynkTray
             // set the auth header
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth.data.access_token);
 
-            return (true, "Login Successful");
+            return true;
         }
 
         public async Task<T> Get<T>(string endpoint)
         {
             return await _httpClient.GetFromJsonAsync<T>(endpoint);
+        }
+
+        /// <summary>
+        ///  Return the plants available to the account.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<PlantsResponse> Plants()
+        {
+            return await Get<PlantsResponse>("/api/v1/plants?page=1&limit=10&name=&status=");
+        }
+
+        public async Task<EnergyFlowResponse> EnergyFlow(int plantId)
+        {
+            return await Get<EnergyFlowResponse>($"/api/v1/plant/energy/{plantId}/flow?date={DateTime.Now.ToString("yyyy-MM-dd")}");
         }
     }
 }

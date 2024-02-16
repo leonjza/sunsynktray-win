@@ -16,16 +16,21 @@ namespace SunSynkTray
                     graphics.Clear(Color.Transparent);
                     graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
 
-                    // Set up the font and brush for drawing
-                    // Adjust the font size as needed to make the number as large as possible while fitting in the icon
                     using (Font font = new Font("Tahoma", 10, FontStyle.Regular, GraphicsUnit.Pixel))
                     using (Brush brush = new SolidBrush(color))
                     {
+                        StringFormat stringFormat = new StringFormat
+                        {
+                            Alignment = StringAlignment.Center, // Center text horizontally
+                            LineAlignment = StringAlignment.Center, // Center text vertically
+                        };
+
                         // Draw the number in the center of the bitmap
-                        graphics.DrawString(num.ToString(), font, brush, -2, 0);
+                        Rectangle rectangle = new Rectangle(0, 0, iconSize, iconSize);
+
+                        graphics.DrawString(num.ToString(), font, brush, rectangle, stringFormat);
                     }
                 }
-
 
                 using (Icon icon = Icon.FromHandle(bitmap.GetHicon()))
                 {
@@ -38,7 +43,7 @@ namespace SunSynkTray
         {
             if (p >= 80)
             {
-                return Color.Green;
+                return Color.SpringGreen;
             }
             else if ((p < 80) && (p >= 60))
             {
@@ -46,11 +51,11 @@ namespace SunSynkTray
             }
             else if ((p < 60) && (p >= 40))
             {
-                return Color.Purple;
+                return Color.LightPink;
             }
             else 
             {
-                return Color.Red; 
+                return Color.OrangeRed; 
             }
         }
 

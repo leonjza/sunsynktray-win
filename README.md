@@ -4,6 +4,10 @@
 
 A small, .NET Framework tray icon application to monitor SunSynk plants' state of charge, for Windows.
 
+## other
+
+If you are looking for a macOS alternative, check out [sunsynktray-macos](https://github.com/leonjza/sunsynktray-macos).
+
 ## installation
 
 Check out the latest release Assets for `SunSynkTrayInstaller.zip`. This installer should install the app in your local `%AppData%` folder. Once installed, search for `SunSynkTray` in your start menu, and open the settings menu from the tray icon that should appear.

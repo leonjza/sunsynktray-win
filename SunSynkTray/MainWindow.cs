@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace SunSynkTray
@@ -8,8 +9,7 @@ namespace SunSynkTray
 
         private UserSettings _settings;
         private ApiClient _apiClient;
-        private int _timerSeconds = 60;
-
+        private int _timerSeconds = 3;
 
         public MainWindow()
         {
@@ -155,8 +155,8 @@ namespace SunSynkTray
                 labelPlantStatus.Text = $"Status: {statusText}";
                 labelPlantStatus.Visible = true;
 
-                trayIcon.Text = statusText;
-                trayIcon.Icon = Tools.TextIcon(energy.data.soc, Tools.PercentAsColor(energy.data.soc));
+                trayIcon.Text = Tools.TruncateString(statusText);
+                trayIcon.Icon = Tools.TextIcon(energy.data.soc.ToString(), Tools.PercentAsColor(energy.data.soc));
 
                 if (!timerCallApi.Enabled) timerCallApi.Start();
             }
@@ -175,7 +175,7 @@ namespace SunSynkTray
                 return;
             }
 
-            _timerSeconds = 60;
+            _timerSeconds = 3;
 
             try
             {
@@ -186,7 +186,7 @@ namespace SunSynkTray
                 labelPlantStatus.Visible = true;
 
                 trayIcon.Text = statusText;
-                trayIcon.Icon = Tools.TextIcon(energy.data.soc, Tools.PercentAsColor(energy.data.soc));
+                trayIcon.Icon = Tools.TextIcon(energy.data.soc.ToString(), Tools.PercentAsColor(energy.data.soc));
 
             }
             catch (Exception ex)
@@ -195,9 +195,8 @@ namespace SunSynkTray
                 labelPlantStatus.Text = statusText;
                 labelPlantStatus.Visible = true;
 
-                trayIcon.Text = statusText;
-                //trayIcon.Icon = Tools.CreateIcon(0.0f, 0);
-                trayIcon.Icon = Tools.TextIcon(0.0f, Tools.PercentAsColor(0.0f));
+                trayIcon.Text = Tools.TruncateString(statusText);
+                trayIcon.Icon = Tools.TextIcon("!", Color.OrangeRed);
             }
         }
     }

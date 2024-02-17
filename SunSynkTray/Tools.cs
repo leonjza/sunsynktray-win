@@ -5,7 +5,7 @@ namespace SunSynkTray
 {
     internal static class Tools
     {
-        public static Icon TextIcon(float num, Color color)
+        public static Icon TextIcon(string value, Color color)
         {
             int iconSize = 16;
 
@@ -28,7 +28,7 @@ namespace SunSynkTray
                         // Draw the number in the center of the bitmap
                         Rectangle rectangle = new Rectangle(0, 0, iconSize, iconSize);
 
-                        graphics.DrawString(num.ToString(), font, brush, rectangle, stringFormat);
+                        graphics.DrawString(value, font, brush, rectangle, stringFormat);
                     }
                 }
 
@@ -57,6 +57,19 @@ namespace SunSynkTray
             {
                 return Color.OrangeRed; 
             }
+        }
+
+        public static string TruncateString(string input, int maxLength = 63)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+
+            int adjustedLength = maxLength - 3;
+            if (input.Length > maxLength)
+            {
+                return input.Substring(0, adjustedLength) + "...";
+            }
+
+            return input;
         }
 
         public static string TimeAgoFormat(DateTime time)

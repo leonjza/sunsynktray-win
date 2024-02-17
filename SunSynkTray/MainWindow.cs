@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace SunSynkTray
@@ -9,7 +10,7 @@ namespace SunSynkTray
 
         private UserSettings _settings;
         private ApiClient _apiClient;
-        private int _timerSeconds = 3;
+        private int _timerSeconds = 60;
 
         public MainWindow()
         {
@@ -17,6 +18,9 @@ namespace SunSynkTray
 
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
+
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            labelVersion.Text = $"v{version.Major}.{version.Minor}.{version.Build}";
         }
 
         private async void MainWindow_Load(object sender, EventArgs e)
@@ -175,7 +179,7 @@ namespace SunSynkTray
                 return;
             }
 
-            _timerSeconds = 3;
+            _timerSeconds = 60;
 
             try
             {

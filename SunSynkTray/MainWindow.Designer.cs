@@ -46,6 +46,7 @@
             this.labelPlantStatus = new System.Windows.Forms.Label();
             this.timerCallApi = new System.Windows.Forms.Timer(this.components);
             this.labelInterval = new System.Windows.Forms.Label();
+            this.labelVersion = new System.Windows.Forms.Label();
             this.contextMenuStrip.SuspendLayout();
             this.groupBoxCredentials.SuspendLayout();
             this.groupBoxPlants.SuspendLayout();
@@ -189,18 +190,28 @@
             // labelInterval
             // 
             this.labelInterval.AutoSize = true;
-            this.labelInterval.Location = new System.Drawing.Point(522, 147);
+            this.labelInterval.Location = new System.Drawing.Point(512, 147);
             this.labelInterval.Name = "labelInterval";
             this.labelInterval.Size = new System.Drawing.Size(64, 13);
             this.labelInterval.TabIndex = 6;
             this.labelInterval.Text = "labelInterval";
             this.labelInterval.Visible = false;
             // 
+            // labelVersion
+            // 
+            this.labelVersion.AutoSize = true;
+            this.labelVersion.Location = new System.Drawing.Point(512, 160);
+            this.labelVersion.Name = "labelVersion";
+            this.labelVersion.Size = new System.Drawing.Size(64, 13);
+            this.labelVersion.TabIndex = 7;
+            this.labelVersion.Text = "labelVersion";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(551, 180);
+            this.Controls.Add(this.labelVersion);
             this.Controls.Add(this.labelInterval);
             this.Controls.Add(this.labelPlantStatus);
             this.Controls.Add(this.groupBoxPlants);
@@ -238,6 +249,7 @@
         private System.Windows.Forms.Label labelPlantStatus;
         private System.Windows.Forms.Timer timerCallApi;
         private System.Windows.Forms.Label labelInterval;
+        private System.Windows.Forms.Label labelVersion;
     }
 }
 

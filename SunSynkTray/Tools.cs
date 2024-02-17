@@ -5,6 +5,7 @@ namespace SunSynkTray
 {
     internal static class Tools
     {
+
         public static Icon TextIcon(string value, Color color)
         {
             int iconSize = 16;

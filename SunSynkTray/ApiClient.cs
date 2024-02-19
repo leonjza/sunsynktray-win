@@ -96,6 +96,7 @@ namespace SunSynkTray
 
         internal class EnergyFlowResponseData
         {
+            public int custCode { get; set; }   // used to check for 0 data api responses
             public int pvPower { get; set; }
             public int battPower { get; set; }
             public int gridOrMeterPower { get; set; }

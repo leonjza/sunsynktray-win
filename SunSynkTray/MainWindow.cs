@@ -184,6 +184,16 @@ namespace SunSynkTray
             try
             {
                 ApiClient.EnergyFlowResponse energy = await _apiClient.EnergyFlow((int)_settings.PlantId);
+
+                // sometimes, the api has no data, and that without any obvious errors. all of
+                // the values we use in the response are energy related and can be 0, so we don't
+                // use those to check for this condition. custCode appears to also be 0 whenever
+                // the API response is not useful, so check for that instead.
+                if (energy.data.custCode == 0)
+                {
+                    return;
+                }
+
                 string statusText = $"PV = {energy.data.pvPower}W, Batt = {energy.data.battPower}W, Grid = {energy.data.gridOrMeterPower}W, Load = {energy.data.loadOrEpsPower}W, SOC = {energy.data.soc}";
 
                 labelPlantStatus.Text = $"Status: {statusText}";
